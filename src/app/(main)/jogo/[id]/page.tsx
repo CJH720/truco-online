@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import dynamic from 'next/dynamic';
 import { useAuthStore } from '@/stores/auth-store';
 import { useGameStore } from '@/stores/game-store';
 import { useSocket } from '@/contexts/socket-context';
@@ -11,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { BotoesAcao } from '@/components/game/botoes-acao';
 import { ChatJogo } from '@/components/chat/chat-jogo';
 import { Carta, Partida, CartaJogada } from '@/types/game';
+import { Mesa2D } from '@/components/game/mesa-2d';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowLeft,
@@ -34,22 +34,6 @@ import {
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { TrucoEffects, GameEndEffects } from '@/components/game/truco-effects';
-
-// Importar Mesa3D dinamicamente para evitar SSR
-const Mesa3D = dynamic(
-  () => import('@/components/game/mesa-3d').then((mod) => mod.Mesa3D),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="w-full h-[600px] rounded-xl bg-green-900/50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-4 border-white border-t-transparent mx-auto mb-4" />
-          <p className="text-white text-lg">Carregando mesa 3D...</p>
-        </div>
-      </div>
-    ),
-  }
-);
 
 export default function JogoPage() {
   const router = useRouter();
@@ -325,9 +309,9 @@ export default function JogoPage() {
       </div>
 
       <div className="grid lg:grid-cols-4 gap-4">
-        {/* Mesa 3D */}
+        {/* Mesa 2D */}
         <div className="lg:col-span-3 space-y-4">
-          <Mesa3D
+          <Mesa2D
             partida={partidaAtual}
             jogadorAtual={usuario.id}
             cartaSelecionada={cartaSelecionada}
