@@ -279,8 +279,8 @@ export default function SalaPage() {
                         ) : (
                           <div className="flex flex-col items-center gap-2">
                             <motion.div
-                              animate={{ opacity: [0.5, 1, 0.5] }}
-                              transition={{ duration: 2, repeat: Infinity }}
+                              animate={{ opacity: [0.5, 1] }}
+                              transition={{ duration: 1, repeat: Infinity, repeatType: 'reverse' }}
                               className="h-16 w-16 rounded-full border-2 border-dashed border-white/30 flex items-center justify-center bg-white/5"
                             >
                               <UserPlus className="h-6 w-6 text-white/50" />
@@ -409,19 +409,19 @@ export default function SalaPage() {
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <p className="text-white font-medium flex items-center gap-2">
+                        <div className="text-white font-medium flex items-center gap-2">
                           {jogador.nome}
                           {jogador.id === usuario.id && (
-                            <Badge className="bg-green-600 text-xs">Você</Badge>
+                            <Badge className="bg-green-600 text-xs">Voce</Badge>
                           )}
                           {currentRoom.criador === jogador.id && (
                             <Crown className="h-4 w-4 text-yellow-400" />
                           )}
-                        </p>
-                        <p className="text-green-300 text-sm flex items-center gap-1">
+                        </div>
+                        <div className="text-green-300 text-sm flex items-center gap-1">
                           <Coins className="h-3 w-3" />
                           {jogador.fichas} fichas
-                        </p>
+                        </div>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">

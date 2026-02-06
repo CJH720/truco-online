@@ -66,17 +66,18 @@ export function TrucoEffects({
           {/* Background flash */}
           <motion.div
             initial={{ opacity: 0 }}
-            animate={{ opacity: [0, 0.3, 0] }}
-            transition={{ duration: 0.5 }}
+            animate={{ opacity: 0.3 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
             className="absolute inset-0"
             style={{ backgroundColor: getTeamColor() }}
           />
 
           {/* Radial burst effect */}
           <motion.div
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: [0, 3, 4], opacity: [1, 0.5, 0] }}
-            transition={{ duration: 1.5 }}
+            initial={{ scale: 0, opacity: 1 }}
+            animate={{ scale: 4, opacity: 0 }}
+            transition={{ duration: 1.5, ease: 'easeOut' }}
             className="absolute w-64 h-64 rounded-full"
             style={{
               background: `radial-gradient(circle, ${getTeamColor()}40 0%, transparent 70%)`,
@@ -87,15 +88,15 @@ export function TrucoEffects({
           {[...Array(8)].map((_, i) => (
             <motion.div
               key={i}
-              initial={{ scale: 0, rotate: 0, x: 0, y: 0 }}
+              initial={{ scale: 0, rotate: 0, x: 0, y: 0, opacity: 1 }}
               animate={{
-                scale: [0, 1, 0.5],
-                rotate: [0, 180 + i * 45],
+                scale: 1,
+                rotate: 180 + i * 45,
                 x: Math.cos((i * Math.PI) / 4) * 200,
                 y: Math.sin((i * Math.PI) / 4) * 200,
-                opacity: [1, 1, 0],
+                opacity: 0,
               }}
-              transition={{ duration: 1, delay: i * 0.05 }}
+              transition={{ duration: 1, delay: i * 0.05, ease: 'easeOut' }}
               className="absolute text-4xl"
             >
               🃏
@@ -105,30 +106,21 @@ export function TrucoEffects({
           {/* Main text */}
           <motion.div
             initial={{ scale: 0, rotate: -10 }}
-            animate={{
-              scale: [0, 1.5, 1.2],
-              rotate: [-10, 5, 0],
-            }}
+            animate={{ scale: 1.2, rotate: 0 }}
             transition={{
-              duration: 0.5,
-              type: 'spring',
-              stiffness: 200,
+              duration: 0.4,
+              ease: 'easeOut',
             }}
             className="relative"
           >
             {/* Glow effect */}
             <motion.div
-              animate={{
-                textShadow: [
-                  `0 0 20px ${getTeamColor()}`,
-                  `0 0 60px ${getTeamColor()}`,
-                  `0 0 20px ${getTeamColor()}`,
-                ],
-              }}
-              transition={{ duration: 0.5, repeat: 3 }}
+              animate={{ opacity: [0.5, 1] }}
+              transition={{ duration: 0.3, repeat: 3, repeatType: 'reverse' }}
               className="text-7xl md:text-9xl font-black text-white drop-shadow-2xl"
               style={{
                 WebkitTextStroke: `3px ${getTeamColor()}`,
+                textShadow: `0 0 40px ${getTeamColor()}`,
               }}
             >
               {getTrucoText()}
@@ -136,11 +128,8 @@ export function TrucoEffects({
 
             {/* Shake effect */}
             <motion.div
-              animate={{
-                x: [0, -5, 5, -5, 5, 0],
-                y: [0, -3, 3, -3, 3, 0],
-              }}
-              transition={{ duration: 0.3, repeat: 2 }}
+              animate={{ x: [-5, 5], y: [-3, 3] }}
+              transition={{ duration: 0.1, repeat: 6, repeatType: 'reverse' }}
               className="absolute inset-0 flex items-center justify-center"
             >
               <span
@@ -225,16 +214,16 @@ export function GameEndEffects({
               <motion.div
                 key={i}
                 initial={{
-                  x: Math.random() * window.innerWidth - window.innerWidth / 2,
+                  x: Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 800) - (typeof window !== 'undefined' ? window.innerWidth : 800) / 2,
                   y: -50,
                   rotate: 0,
                 }}
                 animate={{
-                  y: window.innerHeight + 100,
+                  y: (typeof window !== 'undefined' ? window.innerHeight : 600) + 100,
                   rotate: 360 * (Math.random() > 0.5 ? 1 : -1),
                   x:
-                    Math.random() * window.innerWidth -
-                    window.innerWidth / 2 +
+                    Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 800) -
+                    (typeof window !== 'undefined' ? window.innerWidth : 800) / 2 +
                     (Math.random() - 0.5) * 200,
                 }}
                 transition={{
@@ -273,7 +262,7 @@ export function GameEndEffects({
                 isVictory ? 'text-yellow-400' : 'text-gray-400'
               }`}
             >
-              {isVictory ? 'VITÓRIA!' : 'DERROTA'}
+              {isVictory ? 'VITORIA!' : 'DERROTA'}
             </h1>
             <p className="text-2xl text-white mt-4">
               Time {timeVencedor} venceu!
@@ -309,8 +298,8 @@ export function RoundWinnerEffects({
         >
           <motion.div
             initial={{ y: -20 }}
-            animate={{ y: [0, -10, 0] }}
-            transition={{ duration: 0.5, repeat: 1 }}
+            animate={{ y: 0 }}
+            transition={{ duration: 0.3, repeat: 1, repeatType: 'reverse' }}
             className={`px-8 py-4 rounded-2xl font-bold text-white text-2xl shadow-2xl ${
               timeVencedor === 'A'
                 ? 'bg-blue-600'

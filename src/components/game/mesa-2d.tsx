@@ -7,16 +7,16 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { Crown, Coins } from 'lucide-react';
+import { Coins } from 'lucide-react';
 
-// Card component
+// Card component with responsive sizing
 interface CartaProps {
   carta: CartaType;
   onClick?: () => void;
   selecionada?: boolean;
   virada?: boolean;
   disabled?: boolean;
-  tamanho?: 'sm' | 'md' | 'lg';
+  tamanho?: 'xs' | 'sm' | 'md' | 'lg';
 }
 
 function CartaComponent({
@@ -30,9 +30,10 @@ function CartaComponent({
   const [isHovered, setIsHovered] = useState(false);
 
   const tamanhos = {
-    sm: 'w-12 h-16',
-    md: 'w-16 h-22',
-    lg: 'w-20 h-28',
+    xs: 'w-8 h-11 sm:w-10 sm:h-14',
+    sm: 'w-10 h-14 sm:w-12 sm:h-16',
+    md: 'w-12 h-16 sm:w-14 sm:h-20',
+    lg: 'w-14 h-20 sm:w-16 sm:h-22 md:w-20 md:h-28',
   };
 
   const cardImagePath = virada ? '/cardB.png' : obterImagemCarta(carta);
@@ -41,10 +42,10 @@ function CartaComponent({
     <motion.div
       className={cn(
         tamanhos[tamanho],
-        'relative cursor-pointer transition-all duration-200 rounded-lg overflow-hidden',
-        selecionada && 'ring-4 ring-yellow-400 -translate-y-4',
-        isHovered && !disabled && '-translate-y-2',
-        disabled && 'opacity-50 cursor-not-allowed'
+        'relative cursor-pointer transition-all duration-200 rounded-md overflow-hidden flex-shrink-0',
+        selecionada && 'ring-2 sm:ring-4 ring-yellow-400 -translate-y-2 sm:-translate-y-4',
+        isHovered && !disabled && '-translate-y-1 sm:-translate-y-2',
+        disabled && 'cursor-default'
       )}
       onClick={disabled ? undefined : onClick}
       onMouseEnter={() => setIsHovered(true)}
@@ -59,12 +60,12 @@ function CartaComponent({
       <img
         src={cardImagePath}
         alt={virada ? 'Card back' : `${carta.valor} de ${carta.naipe}`}
-        className="w-full h-full object-cover rounded-lg shadow-lg"
+        className="w-full h-full object-cover rounded-md shadow-lg"
         draggable={false}
       />
       {selecionada && (
         <motion.div
-          className="absolute inset-0 bg-yellow-400/20 rounded-lg"
+          className="absolute inset-0 bg-yellow-400/20 rounded-md"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
         />
@@ -73,79 +74,80 @@ function CartaComponent({
   );
 }
 
-// Player component
-interface JogadorComponentProps {
+// Compact player info component
+interface JogadorCompactoProps {
   jogador: Jogador;
-  posicao: 'sul' | 'norte' | 'leste' | 'oeste';
   ehVezDele: boolean;
-  ehCriador?: boolean;
   ehVoce?: boolean;
+  layout?: 'horizontal' | 'vertical';
+  numCartas?: number;
 }
 
-function JogadorComponent({
+function JogadorCompacto({
   jogador,
-  posicao,
   ehVezDele,
-  ehCriador = false,
   ehVoce = false,
-}: JogadorComponentProps) {
+  layout = 'vertical',
+  numCartas = 0,
+}: JogadorCompactoProps) {
   const getInitials = (nome: string) => {
     return nome.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2);
   };
 
-  const posicaoStyles = {
-    sul: 'flex-col',
-    norte: 'flex-col',
-    leste: 'flex-row-reverse items-center',
-    oeste: 'flex-row items-center',
-  };
-
   return (
-    <motion.div
-      className={cn('flex gap-2', posicaoStyles[posicao])}
-      initial={{ opacity: 0, scale: 0.8 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.3 }}
-    >
+    <div className={cn(
+      'flex items-center gap-2',
+      layout === 'vertical' ? 'flex-col' : 'flex-row'
+    )}>
       <div className="relative">
         <Avatar
           className={cn(
-            'h-14 w-14 border-3 shadow-lg transition-all duration-300',
-            ehVezDele ? 'border-yellow-400 ring-4 ring-yellow-400/50' : 'border-white/50',
-            jogador.online ? '' : 'opacity-50'
+            'w-10 h-10 sm:w-12 sm:h-12 border-2 shadow-lg transition-all duration-300',
+            ehVezDele ? 'border-yellow-400 ring-2 ring-yellow-400/50' : 'border-white/30',
+            !jogador.online && 'opacity-50'
           )}
         >
           <AvatarImage src={jogador.avatar} alt={jogador.nome} />
-          <AvatarFallback className="bg-green-600 text-white text-lg">
+          <AvatarFallback className="bg-green-600 text-white text-sm">
             {getInitials(jogador.nome)}
           </AvatarFallback>
         </Avatar>
-        {ehCriador && (
-          <div className="absolute -top-1 -right-1 bg-yellow-500 rounded-full p-1">
-            <Crown className="h-3 w-3 text-white" />
-          </div>
-        )}
         {jogador.online ? (
-          <div className="absolute -bottom-1 -right-1 bg-green-500 rounded-full h-4 w-4 border-2 border-white" />
+          <div className="absolute -bottom-0.5 -right-0.5 bg-green-500 rounded-full w-3 h-3 border-2 border-green-800" />
         ) : (
-          <div className="absolute -bottom-1 -right-1 bg-red-500 rounded-full h-4 w-4 border-2 border-white" />
+          <div className="absolute -bottom-0.5 -right-0.5 bg-red-500 rounded-full w-3 h-3 border-2 border-green-800" />
         )}
       </div>
-      <div className="text-center">
-        <Badge
-          className={cn(
-            'text-xs px-2 py-0.5',
-            ehVoce ? 'bg-green-600' : 'bg-black/50'
-          )}
-        >
-          {jogador.nome}{ehVoce && ' (Você)'}
-        </Badge>
-        <Badge className="mt-1 bg-yellow-500/20 text-yellow-300 border-yellow-500/30 text-xs">
-          <Coins className="h-3 w-3 mr-1" />
+      <div className={cn(
+        'flex gap-1',
+        layout === 'vertical' ? 'flex-col items-center' : 'flex-col items-start'
+      )}>
+        <span className={cn(
+          'text-white text-xs font-medium px-2 py-0.5 rounded truncate max-w-[80px] sm:max-w-[100px]',
+          ehVoce ? 'bg-green-600' : 'bg-black/40'
+        )}>
+          {jogador.nome}
+        </span>
+        <span className="text-yellow-300 text-xs flex items-center gap-0.5 bg-black/30 px-1.5 py-0.5 rounded">
+          <Coins className="w-3 h-3" />
           {jogador.fichas}
-        </Badge>
+        </span>
       </div>
-    </motion.div>
+      {/* Hidden cards indicator for opponents */}
+      {numCartas > 0 && (
+        <div className={cn(
+          'flex gap-0.5',
+          layout === 'vertical' ? 'flex-row mt-1' : 'flex-col ml-1'
+        )}>
+          {Array.from({ length: numCartas }).map((_, i) => (
+            <div
+              key={i}
+              className="w-5 h-7 sm:w-6 sm:h-8 bg-blue-900/80 rounded-sm border border-blue-700/50 shadow-sm"
+            />
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -156,31 +158,21 @@ interface CartaMesaProps {
 }
 
 function CartaMesa({ carta, posicao }: CartaMesaProps) {
-  const rotacoes = {
-    sul: 0,
-    norte: 180,
-    leste: 90,
-    oeste: -90,
-  };
-
-  const offsets = {
-    sul: { x: 0, y: 30 },
-    norte: { x: 0, y: -30 },
-    leste: { x: 30, y: 0 },
-    oeste: { x: -30, y: 0 },
+  const positionStyles = {
+    sul: 'translate-y-8 sm:translate-y-12',
+    norte: '-translate-y-8 sm:-translate-y-12',
+    leste: 'translate-x-8 sm:translate-x-12',
+    oeste: '-translate-x-8 sm:-translate-x-12',
   };
 
   return (
     <motion.div
-      className="absolute"
-      style={{
-        transform: `translate(${offsets[posicao].x}px, ${offsets[posicao].y}px) rotate(${rotacoes[posicao]}deg)`,
-      }}
-      initial={{ opacity: 0, scale: 0, y: posicao === 'sul' ? 50 : posicao === 'norte' ? -50 : 0 }}
-      animate={{ opacity: 1, scale: 1, y: 0 }}
+      className={cn('absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2', positionStyles[posicao])}
+      initial={{ opacity: 0, scale: 0 }}
+      animate={{ opacity: 1, scale: 1 }}
       transition={{ type: 'spring', stiffness: 300, damping: 20 }}
     >
-      <CartaComponent carta={carta} tamanho="md" disabled />
+      <CartaComponent carta={carta} tamanho="sm" disabled />
     </motion.div>
   );
 }
@@ -246,161 +238,166 @@ export function Mesa2D({
   };
 
   return (
-    <div className="relative w-full aspect-[4/3] min-h-[500px] max-h-[700px]">
-      {/* Table background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-green-700 to-green-800 rounded-3xl border-8 border-amber-900/70 shadow-2xl overflow-hidden">
-        {/* Felt texture */}
-        <div className="absolute inset-4 bg-gradient-to-br from-green-600 to-green-700 rounded-2xl border-4 border-green-800/50" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-green-500/20 via-transparent to-transparent" />
-      </div>
+    <div className="relative w-full bg-gradient-to-br from-green-700 to-green-800 rounded-2xl sm:rounded-3xl border-4 sm:border-8 border-amber-900/70 shadow-2xl overflow-hidden">
+      {/* Inner felt */}
+      <div className="absolute inset-2 sm:inset-4 bg-gradient-to-br from-green-600 to-green-700 rounded-xl sm:rounded-2xl border-2 sm:border-4 border-green-800/50" />
 
-      {/* Score display */}
-      <div className="absolute top-4 left-1/2 -translate-x-1/2 flex gap-4 z-10">
-        <div className="bg-blue-600/90 backdrop-blur px-4 py-2 rounded-lg text-white font-bold shadow-lg">
-          Time A: {partida.times.A.pontos}
-        </div>
-        <div className="bg-red-600/90 backdrop-blur px-4 py-2 rounded-lg text-white font-bold shadow-lg">
-          Time B: {partida.times.B.pontos}
-        </div>
-      </div>
+      {/* Main grid layout */}
+      <div className="relative grid grid-rows-[auto_1fr_auto] min-h-[400px] sm:min-h-[500px] md:min-h-[550px] p-2 sm:p-4">
 
-      {/* Truco value indicator */}
-      {maoAtual && maoAtual.valorAposta > 1 && (
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          className="absolute top-4 left-4 bg-yellow-500 text-black font-bold px-4 py-2 rounded-lg z-10 shadow-lg"
-        >
-          {maoAtual.valorAposta === 3 && 'TRUCO!'}
-          {maoAtual.valorAposta === 6 && 'SEIS!'}
-          {maoAtual.valorAposta === 9 && 'NOVE!'}
-          {maoAtual.valorAposta === 12 && 'DOZE!'}
-        </motion.div>
-      )}
-
-      {/* Vira card */}
-      {maoAtual?.vira && (
-        <div className="absolute top-16 right-4 z-10">
-          <p className="text-white/70 text-xs text-center mb-1">VIRA</p>
-          <CartaComponent carta={maoAtual.vira} tamanho="sm" disabled />
-        </div>
-      )}
-
-      {/* Players positions */}
-      {/* Norte (top) */}
-      {jogadores.norte && (
-        <div className="absolute top-8 left-1/2 -translate-x-1/2 z-10">
-          <JogadorComponent
-            jogador={jogadores.norte}
-            posicao="norte"
-            ehVezDele={partida.jogadorDaVez === jogadores.norte.id}
-          />
-          {/* Opponent cards (face down) */}
-          <div className="flex justify-center gap-1 mt-2">
-            {jogadores.norte.cartas.map((_, i) => (
-              <div key={i} className="w-8 h-12 bg-blue-900 rounded border border-blue-700 shadow" />
-            ))}
+        {/* Top section: Score + North player */}
+        <div className="flex flex-col items-center gap-2 sm:gap-3 pb-2">
+          {/* Score display */}
+          <div className="flex gap-2 sm:gap-4">
+            <div className="bg-blue-600/90 backdrop-blur px-3 sm:px-4 py-1 sm:py-2 rounded-lg text-white font-bold shadow-lg text-sm sm:text-base">
+              Time A: {partida.times.A.pontos}
+            </div>
+            <div className="bg-red-600/90 backdrop-blur px-3 sm:px-4 py-1 sm:py-2 rounded-lg text-white font-bold shadow-lg text-sm sm:text-base">
+              Time B: {partida.times.B.pontos}
+            </div>
           </div>
-        </div>
-      )}
 
-      {/* Oeste (left) */}
-      {jogadores.oeste && (
-        <div className="absolute left-4 top-1/2 -translate-y-1/2 z-10">
-          <JogadorComponent
-            jogador={jogadores.oeste}
-            posicao="oeste"
-            ehVezDele={partida.jogadorDaVez === jogadores.oeste.id}
-          />
-          {/* Opponent cards (face down) */}
-          <div className="flex flex-col gap-1 mt-2">
-            {jogadores.oeste.cartas.map((_, i) => (
-              <div key={i} className="w-8 h-12 bg-blue-900 rounded border border-blue-700 shadow" />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Leste (right) */}
-      {jogadores.leste && (
-        <div className="absolute right-4 top-1/2 -translate-y-1/2 z-10">
-          <JogadorComponent
-            jogador={jogadores.leste}
-            posicao="leste"
-            ehVezDele={partida.jogadorDaVez === jogadores.leste.id}
-          />
-          {/* Opponent cards (face down) */}
-          <div className="flex flex-col gap-1 mt-2">
-            {jogadores.leste.cartas.map((_, i) => (
-              <div key={i} className="w-8 h-12 bg-blue-900 rounded border border-blue-700 shadow" />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Center area - played cards */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
-        <div className="relative w-40 h-40">
-          <AnimatePresence>
-            {(['sul', 'norte', 'leste', 'oeste'] as const).map((pos) => {
-              const carta = getCartaJogadaPorPosicao(pos);
-              if (!carta) return null;
-              return <CartaMesa key={`mesa-${pos}`} carta={carta} posicao={pos} />;
-            })}
-          </AnimatePresence>
-        </div>
-      </div>
-
-      {/* Round indicator */}
-      {maoAtual && (
-        <div className="absolute bottom-32 left-1/2 -translate-x-1/2 z-10">
-          <Badge className="bg-white/10 text-white">
-            Rodada {maoAtual.rodadas.length}/3 | Mão {maoAtual.numero}
-          </Badge>
-        </div>
-      )}
-
-      {/* Sul (bottom) - Current player */}
-      {jogador && (
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10">
-          {/* Player info */}
-          <div className="mb-4 flex justify-center">
-            <JogadorComponent
-              jogador={jogador}
-              posicao="sul"
-              ehVezDele={ehMinhaVez}
-              ehVoce
+          {/* North player */}
+          {jogadores.norte && (
+            <JogadorCompacto
+              jogador={jogadores.norte}
+              ehVezDele={partida.jogadorDaVez === jogadores.norte.id}
+              numCartas={jogadores.norte.cartas.length}
             />
+          )}
+        </div>
+
+        {/* Middle section: West + Center + East */}
+        <div className="flex items-center justify-between px-1 sm:px-2">
+          {/* West player */}
+          <div className="flex-shrink-0">
+            {jogadores.oeste && (
+              <JogadorCompacto
+                jogador={jogadores.oeste}
+                ehVezDele={partida.jogadorDaVez === jogadores.oeste.id}
+                layout="vertical"
+                numCartas={jogadores.oeste.cartas.length}
+              />
+            )}
           </div>
+
+          {/* Center area - played cards + game info */}
+          <div className="flex-1 flex flex-col items-center justify-center mx-2 sm:mx-4">
+            {/* Truco indicator */}
+            {maoAtual && maoAtual.valorAposta > 1 && (
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                className="bg-yellow-500 text-black font-bold px-3 sm:px-4 py-1 sm:py-2 rounded-lg shadow-lg text-sm sm:text-base mb-2"
+              >
+                {maoAtual.valorAposta === 3 && 'TRUCO!'}
+                {maoAtual.valorAposta === 6 && 'SEIS!'}
+                {maoAtual.valorAposta === 9 && 'NOVE!'}
+                {maoAtual.valorAposta === 12 && 'DOZE!'}
+              </motion.div>
+            )}
+
+            {/* Played cards area */}
+            <div className="relative w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48">
+              <AnimatePresence>
+                {(['sul', 'norte', 'leste', 'oeste'] as const).map((pos) => {
+                  const carta = getCartaJogadaPorPosicao(pos);
+                  if (!carta) return null;
+                  return <CartaMesa key={`mesa-${pos}`} carta={carta} posicao={pos} />;
+                })}
+              </AnimatePresence>
+            </div>
+
+            {/* Round info */}
+            {maoAtual && (
+              <Badge className="bg-black/30 text-white border-0 text-xs mt-2">
+                Rodada {maoAtual.rodadas.length}/3 | Mao {maoAtual.numero}
+              </Badge>
+            )}
+          </div>
+
+          {/* East player + Vira card */}
+          <div className="flex-shrink-0 flex flex-col items-center gap-3">
+            {jogadores.leste && (
+              <JogadorCompacto
+                jogador={jogadores.leste}
+                ehVezDele={partida.jogadorDaVez === jogadores.leste.id}
+                layout="vertical"
+                numCartas={jogadores.leste.cartas.length}
+              />
+            )}
+
+            {/* Vira card */}
+            {maoAtual?.vira && (
+              <div className="flex flex-col items-center">
+                <span className="text-white/70 text-xs mb-1">VIRA</span>
+                <CartaComponent carta={maoAtual.vira} tamanho="xs" disabled />
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Bottom section: Turn indicator + Current player + Cards */}
+        <div className="flex flex-col items-center gap-2 pt-2">
+          {/* Turn indicator */}
+          {ehMinhaVez && partida.status === 'em_andamento' && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-yellow-500/90 text-black font-semibold px-4 py-1.5 sm:py-2 rounded-full shadow-lg text-xs sm:text-sm"
+            >
+              {cartaSelecionada
+                ? 'Clique novamente para jogar!'
+                : 'Sua vez! Selecione uma carta'}
+            </motion.div>
+          )}
+
+          {/* Current player info */}
+          {jogador && (
+            <div className="flex items-center gap-2">
+              <div className="relative">
+                <Avatar
+                  className={cn(
+                    'w-10 h-10 sm:w-12 sm:h-12 border-2 shadow-lg transition-all duration-300',
+                    ehMinhaVez ? 'border-yellow-400 ring-2 ring-yellow-400/50' : 'border-white/30'
+                  )}
+                >
+                  <AvatarImage src={jogador.avatar} alt={jogador.nome} />
+                  <AvatarFallback className="bg-green-600 text-white text-sm">
+                    {jogador.nome.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="absolute -bottom-0.5 -right-0.5 bg-green-500 rounded-full w-3 h-3 border-2 border-green-800" />
+              </div>
+              <div className="flex flex-col gap-0.5">
+                <span className="text-white text-xs font-medium px-2 py-0.5 rounded bg-green-600">
+                  {jogador.nome} (Voce)
+                </span>
+                <span className="text-yellow-300 text-xs flex items-center gap-0.5 bg-black/30 px-1.5 py-0.5 rounded">
+                  <Coins className="w-3 h-3" />
+                  {jogador.fichas}
+                </span>
+              </div>
+            </div>
+          )}
 
           {/* My cards */}
-          <div className="flex justify-center gap-2">
-            {jogador.cartas.map((carta) => (
-              <CartaComponent
-                key={carta.id}
-                carta={carta}
-                tamanho="lg"
-                selecionada={cartaSelecionada?.id === carta.id}
-                onClick={() => handleCartaClick(carta)}
-                disabled={!ehMinhaVez || partida.status !== 'em_andamento'}
-              />
-            ))}
-          </div>
+          {jogador && (
+            <div className="flex justify-center gap-1 sm:gap-2 pb-1">
+              {jogador.cartas.map((carta) => (
+                <CartaComponent
+                  key={carta.id}
+                  carta={carta}
+                  tamanho="lg"
+                  selecionada={cartaSelecionada?.id === carta.id}
+                  onClick={() => handleCartaClick(carta)}
+                  disabled={!ehMinhaVez || partida.status !== 'em_andamento'}
+                />
+              ))}
+            </div>
+          )}
         </div>
-      )}
-
-      {/* Turn indicator */}
-      {ehMinhaVez && partida.status === 'em_andamento' && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="absolute bottom-56 left-1/2 -translate-x-1/2 bg-yellow-500/90 backdrop-blur text-black font-semibold px-6 py-3 rounded-full z-20 shadow-lg"
-        >
-          {cartaSelecionada
-            ? 'Clique novamente para jogar!'
-            : 'Sua vez! Selecione uma carta'}
-        </motion.div>
-      )}
+      </div>
     </div>
   );
 }
