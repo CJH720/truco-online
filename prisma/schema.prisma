@@ -1,0 +1,108 @@
+// Prisma schema for Truco Online
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User model
+model User {
+  id              String    @id @default(uuid())
+  nome            String
+  email           String    @unique
+  senha           String    // Hashed password
+  avatar          String?
+  fichas          Int       @default(1000)
+  nivel           Int       @default(1)
+  experiencia     Int       @default(0)
+  vitorias        Int       @default(0)
+  derrotas        Int       @default(0)
+  partidasJogadas Int       @default(0)
+  criadoEm        DateTime  @default(now())
+  atualizadoEm    DateTime  @updatedAt
+
+  // Relations
+  salaCriada      Sala[]    @relation("SalaCriador")
+  jogadorEmSalas  SalaJogador[]
+  historicoPartidas GameHistory[]
+
+  @@map("users")
+}
+
+// Game room model
+model Sala {
+  id            String    @id @default(uuid())
+  nome          String
+  codigo        String    @unique // Invite code
+  criadorId     String
+  criador       User      @relation("SalaCriador", fields: [criadorId], references: [id])
+  maxJogadores  Int       @default(4)
+  aposta        Int       @default(0)
+  status        String    @default("aguardando") // aguardando, cheia, jogando
+  privada       Boolean   @default(false)
+  variante      String    @default("paulista") // paulista, mineiro, gaucho
+  criadoEm      DateTime  @default(now())
+  atualizadoEm  DateTime  @updatedAt
+
+  // Relations
+  jogadores     SalaJogador[]
+  partidas      Partida[]
+
+  @@map("salas")
+}
+
+// Join table for players in rooms
+model SalaJogador {
+  id        String   @id @default(uuid())
+  salaId    String
+  sala      Sala     @relation(fields: [salaId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  posicao   Int      // 0-3 position at table
+  online    Boolean  @default(true)
+  entradaEm DateTime @default(now())
+
+  @@unique([salaId, userId])
+  @@unique([salaId, posicao])
+  @@map("sala_jogadores")
+}
+
+// Match/Game model
+model Partida {
+  id            String    @id @default(uuid())
+  salaId        String
+  sala          Sala      @relation(fields: [salaId], references: [id])
+  pontosTimeA   Int       @default(0)
+  pontosTimeB   Int       @default(0)
+  status        String    @default("aguardando") // aguardando, iniciando, em_andamento, truco_pedido, finalizada
+  vencedor      String?   // 'A' or 'B'
+  variante      String    @default("paulista")
+  dadosJogo     Json?     // Store game state as JSON
+  criadoEm      DateTime  @default(now())
+  finalizadoEm  DateTime?
+
+  // Relations
+  historico     GameHistory[]
+
+  @@map("partidas")
+}
+
+// Game history for statistics
+model GameHistory {
+  id          String    @id @default(uuid())
+  partidaId   String
+  partida     Partida   @relation(fields: [partidaId], references: [id])
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  timeId      String    // 'A' or 'B'
+  venceu      Boolean
+  fichasGanhas Int      @default(0)
+  xpGanho     Int       @default(0)
+  criadoEm    DateTime  @default(now())
+
+  @@map("game_history")
+}
